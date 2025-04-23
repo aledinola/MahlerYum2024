@@ -1,0 +1,88 @@
+ 
+GRIDS SIZES 
+n_d1,  hours of work:   3 
+n_d2,  health effort:   2 
+n_a,  assets:          101 
+n_semiz, health shock:    2 
+n_z, prod shock:      7 
+n_e,  medical shock:   5 
+J,    periods in life: 80 
+PARAMETERS 
+Discount factor, beta:        0.980000 
+CRRA consumption, sigma:      1.500000 
+Elast labor supply, gamma: 1.000000 
+Weight on labor disutil, nu:  1.000000 
+Elast of health effort, psi: 1.000000 
+Weight on health effort disutil, iota, j=1:  0.000000 
+Weight on health effort disutil, iota, j=J:  2.000000 
+Health transition, pi0: 1.000000 
+Health transition, pi1: 0.500000 
+Prob sick to sick, p_bb, j=1:    0.600000 
+Prob sick to sick, p_bb, j=J:     0.900000 
+Prob healthy to sick, p_gb, j=1:  0.100000 
+Prob healthy to sick, p_gb, j=J:  0.400000 
+Decrease in product if sick, low PT: 0.740818 
+Decrease in product if sick, high PT: 0.740818 
+Preference shifter delta: -1.000000 
+Tax level tau0:         0.900000 
+Tax progressivity tau1: 0.080000 
+Subsidy medical expens: 0.000000 
+Soc secur tax rate:     0.120000 
+Soc secur income cap:   10000.000000 
+Consump floor, c_floor: 0.010000 
+RESULTS 
+--- Government ---- 
+atr of mean income:    0.125820 
+Gov net tax revenue:   0.144997 
+--- Unconditional Means ---- 
+Aggregate welfare:     -54.992960 
+Average assets:        8.308077 
+Average hours (non-retirees): 0.886018 
+Average effort: 0.335381 
+Average labincome:     1.583850 
+Average income:        1.375827 
+Average consumption:   1.177045 
+Total tax revenues:    0.414273 
+Average share sick:    0.308857 
+Total medical expens:  0.209167 
+Welfare transfers b:   0.001144 
+--- Means conditional on health ---- 
+Average assets, sick:       11.123371 
+Average assets, healthy:    7.049983 
+Average hours, sick (non-retirees):        0.608113 
+Average hours, healthy (non-retirees):     0.967273 
+Average health effort, sick:       0.559555 
+Average health effort, healthy:    0.235203 
+Average labincome, sick:    1.009667 
+Average labincome, healthy: 1.840440 
+Average income, sick:       0.336141 
+Average income, healthy:    1.840440 
+Average cons, sick:         1.280022 
+Average cons, healthy:      1.131027 
+Average medical expens, sick:    0.677229 
+Average medical expens, healthy: 0.000000 
+Welfare transfers b, sick:       0.003703 
+Welfare transfers b, healthy:    0.000000 
+--- Correlations, unconditional ---- 
+labincome and health:        0.224564 
+--- Unconditional Gini ---- 
+Gini assets:        0.599126 
+Gini effort:         0.664619 
+Gini labincome:     0.404340 
+Gini income:        0.549476 
+Gini consumption:   0.346289 
+Gini tax revenues:    0.666523 
+Gini medical expens:  0.777200 
+--- Gini conditional on health ---- 
+Gini assets, sick:       0.546085 
+Gini assets, healthy:    0.613864 
+Gini effort, sick:        0.440445 
+Gini effort, healthy:     0.764797 
+Gini labincome, sick:    0.258478 
+Gini labincome, healthy: 0.414693 
+Gini income, sick:       1.061471 
+Gini income, healthy:    0.414693 
+Gini cons, sick:         0.380428 
+Gini cons, healthy:      0.325860 
+Gini medical expens, sick:    0.278631 
+Gini medical expens, healthy: NaN 
