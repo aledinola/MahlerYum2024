@@ -13,13 +13,13 @@
 % - fun_params_cpu
 clear,clc,close all,format long g
 % Laptop
-myf = 'C:\Users\aledi\Documents\GitHub\VFIToolkit-matlab';
+%myf = 'C:\Users\aledi\Documents\GitHub\VFIToolkit-matlab';
 % Desktop
-%myf = 'C:\Users\aledi\OneDrive\Documents\GitHub\VFIToolkit-matlab';
+myf = 'C:\Users\aledi\OneDrive\Documents\GitHub\VFIToolkit-matlab';
 addpath(genpath(myf))
 % Add cpu-specific functions
 addpath('cpu')
-addpath(fullfile('..','tools'))
+%addpath(fullfile('..','tools'))
 
 %% How does VFI Toolkit think about this?
 % Ordering of variables: (aprime,a,z(1),z(2),theta,j)
