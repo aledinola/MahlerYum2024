@@ -483,23 +483,58 @@ simoptions.n_semiz        = vfoptions.n_semiz;
 simoptions.semiz_grid     = vfoptions.semiz_grid;
 simoptions.SemiExoStateFn = vfoptions.SemiExoStateFn;
 
-%% Value function iteration
-disp('Test ValueFnIter')
-tic;
-[V, Policy]=ValueFnIter_Case1_FHorz_PType(n_d,n_a,n_z,N_j,Names_i,d_grid,a_grid,z_grid,pi_z,ReturnFn,Params,DiscountFactorParamNames,vfoptions);
-toc
+% %% Value function iteration
+% disp('Test ValueFnIter')
+% tic;
+% [V, Policy]=ValueFnIter_Case1_FHorz_PType(n_d,n_a,n_z,N_j,Names_i,d_grid,a_grid,z_grid,pi_z,ReturnFn,Params,DiscountFactorParamNames,vfoptions);
+% toc
+% 
+% size(V.e0b0p0h0)
+% disp([n_a,n_semiz,n_z,n_e,N_j])
+% 
+% size(Policy.e0b0p0h0)
+% % which is the same as
+% disp([length(n_d)+length(n_a),n_a,n_semiz,n_z,n_e,N_j])
+% 
+% % d1=labor, d2=health effort, a'
+% pol_aprime_ind = squeeze(Policy.e1b1p1h1(3,:,:,:,:,:));
+% pol_aprime = a_grid(pol_aprime_ind);
+% max_aprime = max(pol_aprime,[],'all');
+% 
+% figure
+% plot(a_grid,pol_aprime(:,:,1,1,1))
 
-size(V.e0b0p0h0)
-disp([n_a,n_semiz,n_z,n_e,N_j])
+%% If you want to take a look at what the whole 'semi-exogenous transition matrix' looks like (it is created automatically by codes) it will look like
+N_i = numel(Names_i);
+pi_semiz_J=zeros([n_semiz,n_semiz,n_d(2),N_j]); % Note that endogenous state is the first, then the conditional transition matrix for shocks
 
-size(Policy.e0b0p0h0)
-% which is the same as
-disp([length(n_d)+length(n_a),n_a,n_semiz,n_z,n_e,N_j])
+for PT_c=1:N_i
+for jj=1:N_j
+for d2_c=1:n_d(2)
+for hprime_c=1:n_semiz
+for h_c=1:n_semiz
+    % Note: the -1 turn the index into the value
+    d2_val = d2_grid(d2_c);
+    h_val = semiz_grid(h_c);
+    hprime_val = semiz_grid(hprime_c);
+    pi_semiz_J(h_c,hprime_c,d2_c,jj,PT_c)=MahlerYum2024_SemiExoStateFn(h_val,hprime_val,d2_val,Params.educ.(Names_i{PT_c}),Params.eta.(Names_i{PT_c}),Params.pi0,Params.lambda1,Params.delta,Params.gamma1,Params.gamma2);
+end
+end
+end
+end
+end
 
-% d1=labor, d2=health effort, a'
-pol_aprime_ind = squeeze(Policy.e1b1p1h1(3,:,:,:,:,:));
-pol_aprime = a_grid(pol_aprime_ind);
-max_aprime = max(pol_aprime,[],'all');
+% How does pi_semiz(2,1) = prob of getting sick changes with effort
+ale = squeeze(pi_semiz_J(2,1,:,20,16));
 
-figure
-plot(a_grid,pol_aprime(:,:,1,1,1))
+% Make sure the 'rows' sum to one
+for PT_c=1:N_i
+for jj=1:N_j
+for d2_c=1:n_d(2)
+    temp=sum(pi_semiz_J(:,:,d2_c,jj,PT_c),2);
+    if any(abs(temp-1)>10^(-14))
+        temp-1
+    end
+end
+end
+end
