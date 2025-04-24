@@ -5,9 +5,9 @@
 % - Tax function and social transfers
 clear,clc,close all,format long g
 % Laptop
-myf = 'C:\Users\aledi\Documents\GitHub\VFIToolkit-matlab';
+%myf = 'C:\Users\aledi\Documents\GitHub\VFIToolkit-matlab';
 % Desktop
-%myf = 'C:\Users\aledi\OneDrive\Documents\GitHub\VFIToolkit-matlab';
+myf = 'C:\Users\aledi\OneDrive\Documents\GitHub\VFIToolkit-matlab';
 addpath(genpath(myf))
 % Add cpu-specific functions
 %addpath('cpu')
@@ -269,6 +269,9 @@ Params.y_pen_e0 = Params.n_ft*Params.theta_prob(1)*exp(Params.lambda_e0(Params.J
 % e1s = college
 Params.y_pen_e1 = Params.n_ft*Params.theta_prob(1)*exp(Params.lambda_e1(Params.Jr-1)+Params.theta_low+z_med)+...
     Params.theta_prob(2)*exp(Params.lambda_e1(Params.Jr-1)+Params.theta_high+z_med);
+% Apply replacement rate omega
+Params.y_pen_e0 = Params.omega*Params.y_pen_e0;
+Params.y_pen_e1 = Params.omega*Params.y_pen_e1;
 
 %% Set all parameters that depend on permanent type
 % e=0,1 education
@@ -588,6 +591,9 @@ AgeStats=LifeCycleProfiles_FHorz_Case1_PType(StatDist,Policy,FnsToEvaluate,Param
 % Which are calculated across all permanent types of agents.
 % And also the 'conditional on permanent type' statistics, like 
 % AgeConditionalStats.earnings.patient.Mean
+
+figure
+plot(1:1:N_j,AgeStats.alive.assets.Mean)
 
 %% If you want to take a look at what the whole 'semi-exogenous transition matrix' looks like (it is created automatically by codes) it will look like
 N_i = numel(Names_i);

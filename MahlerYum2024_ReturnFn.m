@@ -29,7 +29,7 @@ if h==0
     iota_shift    = iota_h0; % Shifter for cost of effort
 else
     % h=1, Healthy
-    wage_penalty  = 1;       % Wage penalty
+    wage_penalty  = 0;       % Wage penalty
     kappa_shifter = 1;       % Shifter for utility of consumption
     nu_shift      = nu_h1;   % Shifter for disutility of work
     iota_shift    = iota_h1; % Shifter for cost of effort
