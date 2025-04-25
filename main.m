@@ -1,13 +1,12 @@
-%% Life-Cycle Model with health shocks
+%% Mahler & Yum (2024) - Lifestyle Behaviours and Wealth-Health Gaps in Germany
 % TODO: 
-% - Survival prob must depend on health state
 % - Adjustment cost of effort with shock
 % - Tax function and social transfers
 clear,clc,close all,format long g
 % Laptop
-%myf = 'C:\Users\aledi\Documents\GitHub\VFIToolkit-matlab';
+myf = 'C:\Users\aledi\Documents\GitHub\VFIToolkit-matlab';
 % Desktop
-myf = 'C:\Users\aledi\OneDrive\Documents\GitHub\VFIToolkit-matlab';
+%myf = 'C:\Users\aledi\OneDrive\Documents\GitHub\VFIToolkit-matlab';
 addpath(genpath(myf))
 % Add cpu-specific functions
 %addpath('cpu')
@@ -42,9 +41,9 @@ n_semiz = 3;        % Semi-exogenous state: Health status (0=unhealthy,1=healthy
 n_z     = 5;        % Exogenous state: labor productivity shock
 N_j     = Params.J; % Number of periods in finite horizon
 
-% --- Remaining parameters
+% --- Model parameters, scalars
 Params.r     = 1.04^2-1; % Net interest rate (one period = 2 years)
-Params.kappa = 0.872;    % Shifter in utility of consumption (if h=0)
+Params.kappa_tilde = 0.872;    % Shifter in utility of consumption (if h=0)
 Params.sigma = 2;        % CRRA in utility of consumption
 Params.b     = 13.11;    % Utility constant
 Params.rho   = 0.975;    % Labor productivity autocorrelation
@@ -58,6 +57,11 @@ Params.csi1  = 0.145;    % Adjustment cost effort (not used)
 % Tax function parameters (HSV or Benabou functional form)
 Params.tau_s = 0.321;    % Level parameter (roughly, average tax rate)
 Params.tau_p = 0.128;    % Progressivity parameter
+Params.ybar  = 1;        % average income, This is a placeholder
+
+% Transfers
+Params.ctilde=0.1; % consumption floor, 10% of average income
+Params.Ttilde=1/6; % 70% of income for 60 days of the year
 
 % Discount factor
 mu_beta          = 0.943;
@@ -142,18 +146,34 @@ Params.theta_low  = -0.29;
 Params.theta_high = 0.29;
 Params.theta_prob = [0.5,0.5];
 
-% Now create age-dependent component of wage, which depends on age j and on educ (e=0,1)
-% Note: lambda in the paper includes also the wage penalty if unhealthy
-Params.lambda_e0 = Params.zeta0_e0*exp(Params.zeta1_e0*(Params.agej-1)+Params.zeta2_e0*(Params.agej-1).^2);
-Params.lambda_e1 = Params.zeta0_e1*exp(Params.zeta1_e1*(Params.agej-1)+Params.zeta2_e1*(Params.agej-1).^2);
+% Now create age-dependent component of wage, which depends on health (h=0,1)
+% on educ (e=0,1) and on age
+% If h=0 (unhealthy), there is a wage penalty, which depends on education
+Params.lambda_h0_e0 = Params.zeta0_e0*exp(Params.zeta1_e0*(Params.agej-1)+Params.zeta2_e0*(Params.agej-1).^2)*(1-Params.wp_e0);
+Params.lambda_h0_e1 = Params.zeta0_e1*exp(Params.zeta1_e1*(Params.agej-1)+Params.zeta2_e1*(Params.agej-1).^2)*(1-Params.wp_e1);
+% If h=1 (healthy), no wage penalty
+Params.lambda_h1_e0 = Params.zeta0_e0*exp(Params.zeta1_e0*(Params.agej-1)+Params.zeta2_e0*(Params.agej-1).^2);
+Params.lambda_h1_e1 = Params.zeta0_e1*exp(Params.zeta1_e1*(Params.agej-1)+Params.zeta2_e1*(Params.agej-1).^2);
 
 figure
-plot(1:1:Params.Jr-1,Params.lambda_e0(1:Params.Jr-1))
+subplot(1,2,1)
+plot(1:1:Params.Jr-1,Params.lambda_h0_e0(1:Params.Jr-1))
 hold on
-plot(1:1:Params.Jr-1,Params.lambda_e1(1:Params.Jr-1))
-legend('Non-college','College')
+plot(1:1:Params.Jr-1,Params.lambda_h1_e0(1:Params.Jr-1))
+legend('Unhealthy','Healthy')
 xlabel('Age')
-title('Deterministic component of log(wages)')
+ylim([0.7,2.4])
+title('Non-college')
+
+subplot(1,2,2)
+plot(1:1:Params.Jr-1,Params.lambda_h0_e1(1:Params.Jr-1))
+hold on
+plot(1:1:Params.Jr-1,Params.lambda_h1_e1(1:Params.Jr-1))
+legend('Unhealthy','Healthy')
+xlabel('Age')
+ylim([0.7,2.4])
+title('College')
+sgtitle('Deterministic component of log(wages)')
 
 % --- Health effort parameters
 
@@ -264,11 +284,11 @@ semiz_grid = [0,1,2]'; % 0=unhealthy, 1=healthy, 2=dead
 % pension benefits
 z_med = z_grid(floor((n_z+1)/2));
 % e0 = non-college
-Params.y_pen_e0 = Params.n_ft*Params.theta_prob(1)*exp(Params.lambda_e0(Params.Jr-1)+Params.theta_low+z_med)+...
-    Params.theta_prob(2)*exp(Params.lambda_e0(Params.Jr-1)+Params.theta_high+z_med);
+Params.y_pen_e0 = Params.n_ft*Params.theta_prob(1)*exp(Params.lambda_h1_e0(Params.Jr-1)+Params.theta_low+z_med)+...
+    Params.theta_prob(2)*exp(Params.lambda_h1_e0(Params.Jr-1)+Params.theta_high+z_med);
 % e1s = college
-Params.y_pen_e1 = Params.n_ft*Params.theta_prob(1)*exp(Params.lambda_e1(Params.Jr-1)+Params.theta_low+z_med)+...
-    Params.theta_prob(2)*exp(Params.lambda_e1(Params.Jr-1)+Params.theta_high+z_med);
+Params.y_pen_e1 = Params.n_ft*Params.theta_prob(1)*exp(Params.lambda_h1_e1(Params.Jr-1)+Params.theta_low+z_med)+...
+    Params.theta_prob(2)*exp(Params.lambda_h1_e1(Params.Jr-1)+Params.theta_high+z_med);
 % Apply replacement rate omega
 Params.y_pen_e0 = Params.omega*Params.y_pen_e0;
 Params.y_pen_e1 = Params.omega*Params.y_pen_e1;
@@ -320,24 +340,42 @@ Params.iota_h1.e1b0p1h1 = Params.iota_h1_e1;
 Params.iota_h1.e0b1p1h1 = Params.iota_h1_e0;
 Params.iota_h1.e1b1p1h1 = Params.iota_h1_e1;
 
-% Deterministic component of wage, depends on fixed educ type e=0 and e=1
-% and on age j
-Params.lambda.e0b0p0h0 = Params.lambda_e0; % dim: (N_j,1)
-Params.lambda.e1b0p0h0 = Params.lambda_e1;
-Params.lambda.e0b1p0h0 = Params.lambda_e0;
-Params.lambda.e1b1p0h0 = Params.lambda_e1;
-Params.lambda.e0b0p1h0 = Params.lambda_e0;
-Params.lambda.e1b0p1h0 = Params.lambda_e1;
-Params.lambda.e0b1p1h0 = Params.lambda_e0;
-Params.lambda.e1b1p1h0 = Params.lambda_e1;
-Params.lambda.e0b0p0h1 = Params.lambda_e0;
-Params.lambda.e1b0p0h1 = Params.lambda_e1;
-Params.lambda.e0b1p0h1 = Params.lambda_e0;
-Params.lambda.e1b1p0h1 = Params.lambda_e1;
-Params.lambda.e0b0p1h1 = Params.lambda_e0;
-Params.lambda.e1b0p1h1 = Params.lambda_e1;
-Params.lambda.e0b1p1h1 = Params.lambda_e0;
-Params.lambda.e1b1p1h1 = Params.lambda_e1;
+% Deterministic component of wage, depends on fixed educ type e=0,1 and on age j
+% --- Given h=0 (unhealthy)
+Params.lambda_h0.e0b0p0h0 = Params.lambda_h0_e0; % dim: (N_j,1)
+Params.lambda_h0.e1b0p0h0 = Params.lambda_h0_e1;
+Params.lambda_h0.e0b1p0h0 = Params.lambda_h0_e0;
+Params.lambda_h0.e1b1p0h0 = Params.lambda_h0_e1;
+Params.lambda_h0.e0b0p1h0 = Params.lambda_h0_e0;
+Params.lambda_h0.e1b0p1h0 = Params.lambda_h0_e1;
+Params.lambda_h0.e0b1p1h0 = Params.lambda_h0_e0;
+Params.lambda_h0.e1b1p1h0 = Params.lambda_h0_e1;
+Params.lambda_h0.e0b0p0h1 = Params.lambda_h0_e0;
+Params.lambda_h0.e1b0p0h1 = Params.lambda_h0_e1;
+Params.lambda_h0.e0b1p0h1 = Params.lambda_h0_e0;
+Params.lambda_h0.e1b1p0h1 = Params.lambda_h0_e1;
+Params.lambda_h0.e0b0p1h1 = Params.lambda_h0_e0;
+Params.lambda_h0.e1b0p1h1 = Params.lambda_h0_e1;
+Params.lambda_h0.e0b1p1h1 = Params.lambda_h0_e0;
+Params.lambda_h0.e1b1p1h1 = Params.lambda_h0_e1;
+
+% --- Given h=1 (healthy)
+Params.lambda_h1.e0b0p0h0 = Params.lambda_h1_e0; % dim: (N_j,1)
+Params.lambda_h1.e1b0p0h0 = Params.lambda_h1_e1;
+Params.lambda_h1.e0b1p0h0 = Params.lambda_h1_e0;
+Params.lambda_h1.e1b1p0h0 = Params.lambda_h1_e1;
+Params.lambda_h1.e0b0p1h0 = Params.lambda_h1_e0;
+Params.lambda_h1.e1b0p1h0 = Params.lambda_h1_e1;
+Params.lambda_h1.e0b1p1h0 = Params.lambda_h1_e0;
+Params.lambda_h1.e1b1p1h0 = Params.lambda_h1_e1;
+Params.lambda_h1.e0b0p0h1 = Params.lambda_h1_e0;
+Params.lambda_h1.e1b0p0h1 = Params.lambda_h1_e1;
+Params.lambda_h1.e0b1p0h1 = Params.lambda_h1_e0;
+Params.lambda_h1.e1b1p0h1 = Params.lambda_h1_e1;
+Params.lambda_h1.e0b0p1h1 = Params.lambda_h1_e0;
+Params.lambda_h1.e1b0p1h1 = Params.lambda_h1_e1;
+Params.lambda_h1.e0b1p1h1 = Params.lambda_h1_e0;
+Params.lambda_h1.e1b1p1h1 = Params.lambda_h1_e1;
 
 % Permanent productivity type (theta), depends on p=0,1
 Params.theta.e0b0p0h0 = Params.theta_low; % dim: scalar
@@ -468,30 +506,11 @@ Params.eta.e1b0p1h1 = 1;
 Params.eta.e0b1p1h1 = 1;
 Params.eta.e1b1p1h1 = 1;
 
-% Wage penalty wp. Depends on education e=0,1 (non-college, college)
-Params.wp.e0b0p0h0 = Params.wp_e0;  % dim: scalar
-Params.wp.e1b0p0h0 = Params.wp_e1;
-Params.wp.e0b1p0h0 = Params.wp_e0;
-Params.wp.e1b1p0h0 = Params.wp_e1;
-Params.wp.e0b0p1h0 = Params.wp_e0;
-Params.wp.e1b0p1h0 = Params.wp_e1;
-Params.wp.e0b1p1h0 = Params.wp_e0;
-Params.wp.e1b1p1h0 = Params.wp_e1;
-Params.wp.e0b0p0h1 = Params.wp_e0;
-Params.wp.e1b0p0h1 = Params.wp_e1;
-Params.wp.e0b1p0h1 = Params.wp_e0;
-Params.wp.e1b1p0h1 = Params.wp_e1;
-Params.wp.e0b0p1h1 = Params.wp_e0;
-Params.wp.e1b0p1h1 = Params.wp_e1;
-Params.wp.e0b1p1h1 = Params.wp_e0;
-Params.wp.e1b1p1h1 = Params.wp_e1;
-
-
 %% Now, create the return function 
 DiscountFactorParamNames={'beta'};
 
-ReturnFn=@(n,f,aprime,a,h,z,agej,Jr,lambda,wp,theta,y_pen,r,kappa,nu_h0,nu_h1,iota_h0,iota_h1,gamma,psi,sigma,nu_e,b,educ) ...
-    MahlerYum2024_ReturnFn(n,f,aprime,a,h,z,agej,Jr,lambda,wp,theta,y_pen,r,kappa,nu_h0,nu_h1,iota_h0,iota_h1,gamma,psi,sigma,nu_e,b,educ);
+ReturnFn=@(n,f,aprime,a,h,z,agej,Jr,lambda_h0,lambda_h1,theta,y_pen,r,kappa_tilde,nu_h0,nu_h1,iota_h0,iota_h1,gamma,psi,sigma,nu_e,b,educ,tau_s,tau_p,ybar) ...
+    MahlerYum2024_ReturnFn(n,f,aprime,a,h,z,agej,Jr,lambda_h0,lambda_h1,theta,y_pen,r,kappa_tilde,nu_h0,nu_h1,iota_h0,iota_h1,gamma,psi,sigma,nu_e,b,educ,tau_s,tau_p,ybar);
 
 %% Set options for the toolkit
 vfoptions.verbose    = 1; % Just so we can see feedback on progress
@@ -510,7 +529,7 @@ simoptions.SemiExoStateFn = vfoptions.SemiExoStateFn;
 simoptions.d_grid         = d_grid;
 
 %% Value function iteration
-disp('Test ValueFnIter')
+disp('ValueFnIter...')
 tic;
 [V, Policy]=ValueFnIter_Case1_FHorz_PType(n_d,n_a,n_z,N_j,Names_i,d_grid,a_grid,z_grid,pi_z,ReturnFn,Params,DiscountFactorParamNames,vfoptions);
 toc
@@ -559,23 +578,80 @@ end
 end
 
 Params.PTypeDist = PTypeDist;
-jequaloneDist=zeros([n_a,n_semiz,n_z],'gpuArray'); 
+%jequaloneDist=zeros([n_a,n_semiz,n_z],'gpuArray'); 
 
 % All agents start with zero assets, health status from data, and median productivity shock 
 % At j=1, we asssume 10% unhealthy, 90% healthy and 0% dead
-jequaloneDist(1,:,floor((n_z+1)/2)) = [0.1,0.9,0];
+%jequaloneDist(1,:,floor((n_z+1)/2)) = [0.1,0.9,0];
+
+jequaloneDist.e0b0p0h0=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e1b0p0h0=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e0b1p0h0=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e1b1p0h0=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e0b0p1h0=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e1b0p1h0=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e0b1p1h0=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e1b1p1h0=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e0b0p0h1=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e1b0p0h1=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e0b1p0h1=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e1b1p0h1=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e0b0p1h1=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e1b0p1h1=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e0b1p1h1=zeros([n_a,n_semiz,n_z]);
+jequaloneDist.e1b1p1h1=zeros([n_a,n_semiz,n_z]);
+
+% PT=(educ,beta,theta,eta)
+% Note that the distribution of health at age j=1 varies only across eta
+% and across educ
+avghealth_e0_h0 = 0.878;
+avghealth_e0_h1 = 0.937;
+avghealth_e1_h0 = 0.926;
+avghealth_e1_h1 = 0.960;
+
+% Prob(h=0) = 1-avg, Prob(h=1) = avg
+jequaloneDist.e0b0p0h0(1,1:2,ceil(n_z/2)) = [1-avghealth_e0_h0,avghealth_e0_h0];
+jequaloneDist.e1b0p0h0(1,1:2,ceil(n_z/2)) = [1-avghealth_e1_h0,avghealth_e1_h0];
+jequaloneDist.e0b1p0h0(1,1:2,ceil(n_z/2)) = [1-avghealth_e0_h0,avghealth_e0_h0];
+jequaloneDist.e1b1p0h0(1,1:2,ceil(n_z/2)) = [1-avghealth_e1_h0,avghealth_e1_h0]; 
+jequaloneDist.e0b0p1h0(1,1:2,ceil(n_z/2)) = [1-avghealth_e0_h0,avghealth_e0_h0]; 
+jequaloneDist.e1b0p1h0(1,1:2,ceil(n_z/2)) = [1-avghealth_e1_h0,avghealth_e1_h0]; 
+jequaloneDist.e0b1p1h0(1,1:2,ceil(n_z/2)) = [1-avghealth_e0_h0,avghealth_e0_h0]; 
+jequaloneDist.e1b1p1h0(1,1:2,ceil(n_z/2)) = [1-avghealth_e1_h0,avghealth_e1_h0]; 
+jequaloneDist.e0b0p0h1(1,1:2,ceil(n_z/2)) = [1-avghealth_e0_h1,avghealth_e0_h1]; 
+jequaloneDist.e1b0p0h1(1,1:2,ceil(n_z/2)) = [1-avghealth_e1_h1,avghealth_e1_h1];
+jequaloneDist.e0b1p0h1(1,1:2,ceil(n_z/2)) = [1-avghealth_e0_h1,avghealth_e0_h1]; 
+jequaloneDist.e1b1p0h1(1,1:2,ceil(n_z/2)) = [1-avghealth_e1_h1,avghealth_e1_h1]; 
+jequaloneDist.e0b0p1h1(1,1:2,ceil(n_z/2)) = [1-avghealth_e0_h1,avghealth_e0_h1]; 
+jequaloneDist.e1b0p1h1(1,1:2,ceil(n_z/2)) = [1-avghealth_e1_h1,avghealth_e1_h1]; 
+jequaloneDist.e0b1p1h1(1,1:2,ceil(n_z/2)) = [1-avghealth_e0_h1,avghealth_e0_h1]; 
+jequaloneDist.e1b1p1h1(1,1:2,ceil(n_z/2)) = [1-avghealth_e1_h1,avghealth_e1_h1]; 
 
 AgeWeightsParamNames={'ageweights'};
 Params.ageweights=ones(N_j,1)/N_j;
 
+disp('Stationary Distribution...')
 StatDist=StationaryDist_Case1_FHorz_PType(jequaloneDist,AgeWeightsParamNames,PTypeDistParamNames,Policy,n_d,n_a,n_z,N_j,Names_i,pi_z,Params,simoptions);
+
+size(StatDist.e0b0p0h0)
+disp([n_a,n_semiz,n_z,N_j])
+
+[mu,pol_n,pol_f,pol_aprime] = create_my_statdist(StatDist,Policy,Names_i,n_a,n_semiz,n_z,N_j);
+
+
 
 %% FnsToEvaluate
 % n,f: Two decision variables d1 and d2
 % aprime and a: Endogenous state (tomorrow and today)
 % h: Semi-exogenous shock
 % z: productivity shock
+
+% Assets
 FnsToEvaluate.assets=@(n,f,aprime,a,h,z) a; % a is the current asset holdings
+% Employment dummy equals 1 if agent is either part-time or full-time
+FnsToEvaluate.employment=@(n,f,aprime,a,h,z) (n>0);
+% Labor income
+FnsToEvaluate.labincome=@(n,f,aprime,a,h,z,agej,Jr,lambda_h0,lambda_h1,theta) labincome_fn(n,f,aprime,a,h,z,agej,Jr,lambda_h0,lambda_h1,theta);
 
 %--- Conditional restrictions. Must return either 0 or 1
 condres.alive = @(n,f,aprime,a,h,z) (h==0 || h==1);
@@ -585,7 +661,11 @@ simoptions.conditionalrestrictions = condres;
 
 %% Calculate the life-cycle profiles
 
+simoptions.whichstats = zeros(1,7);
+simoptions.whichstats(1) = 1;
+
 AgeStats=LifeCycleProfiles_FHorz_Case1_PType(StatDist,Policy,FnsToEvaluate,Params,n_d,n_a,n_z,N_j,Names_i,d_grid,a_grid,z_grid,simoptions);
+save temp_age_stats
 % By default, this includes both the 'grouped' statistics, like
 % AgeConditionalStats.earnings.Mean
 % Which are calculated across all permanent types of agents.
@@ -593,7 +673,31 @@ AgeStats=LifeCycleProfiles_FHorz_Case1_PType(StatDist,Policy,FnsToEvaluate,Param
 % AgeConditionalStats.earnings.patient.Mean
 
 figure
-plot(1:1:N_j,AgeStats.alive.assets.Mean)
+plot(1:1:Params.J,AgeStats.alive.assets.Mean)
+xlabel('Age, j=1,..,J')
+ylabel('Mean assets')
+title('Assets by age')
+
+figure
+plot(1:Params.Jr-1,AgeStats.alive.employment.Mean(1:Params.Jr-1))
+xlabel('Age, j=1,..,J')
+ylabel('Employment')
+title('Employment by age')
+
+figure
+plot(1:Params.Jr-1,AgeStats.alive.labincome.Mean(1:Params.Jr-1))
+xlabel('Age, j=1,..,J')
+title('Labor income by age')
+
+% Compute manually average employment conditional on h=0 or h=1
+[empl_rate_age] = fun_moments(mu,d1_grid,semiz_grid,pol_n,n_a,n_semiz,n_z,N_j,Names_i);
+
+figure
+plot(1:Params.Jr-1,empl_rate_age(1:Params.Jr-1))
+ylim([0.65,1])
+xlabel('Age, j=1,..,J')
+ylabel('Employment')
+title('Employment by age, ALE')
 
 %% If you want to take a look at what the whole 'semi-exogenous transition matrix' looks like (it is created automatically by codes) it will look like
 N_i = numel(Names_i);
