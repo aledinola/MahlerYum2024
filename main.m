@@ -74,7 +74,6 @@ Params.n_pt = 0.5;
 Params.n_ft = 1.0;
  
 % Health technology (probability of being in good health in j+1)
-Params.pi0     = -0.905;
 Params.lambda1 = 0.693;
 Params.delta   = 2.311;
 Params.gamma1  = 0.238;
@@ -132,7 +131,7 @@ Params.nu_e = 0.807; % Work disutility for non-college educated (e=0)
 Params.zeta0_e0 = 0.899;
 Params.zeta1_e0 = 0.0616;
 Params.zeta2_e0 = -0.0025;
-
+% College (e=1)
 Params.zeta0_e1 = 1.165;
 Params.zeta1_e1 = 0.0874;
 Params.zeta2_e1 = -0.0029;
@@ -258,6 +257,21 @@ legend('Unhealthy','Healthy','Location','southwest')
 xlabel('Age, j')
 title('College')
 sgtitle('Conditional survival probabilities')
+
+% --- Health transition parameters
+pi0_constant = -0.905; % Base group (age 25-35)
+pi0_35 = -0.289;
+pi0_45 = -0.644;
+pi0_55 = -0.881;
+pi0_65 = -1.138;
+pi0_75 = -1.586;
+% Note: I add some extra elements so that pi0 has N_j=38 elements
+Params.pi0 = [pi0_constant*ones(5,1);...
+    (pi0_constant+pi0_35)*ones(5,1);...
+    (pi0_constant+pi0_45)*ones(5,1);...
+    (pi0_constant+pi0_55)*ones(5,1);...
+    (pi0_constant+pi0_65)*ones(5,1);...
+    (pi0_constant+pi0_75)*ones(13,1)];
 
 %% Set grids
 
@@ -509,8 +523,8 @@ Params.eta.e1b1p1h1 = 1;
 %% Now, create the return function 
 DiscountFactorParamNames={'beta'};
 
-ReturnFn=@(n,f,aprime,a,h,z,agej,Jr,lambda_h0,lambda_h1,theta,y_pen,r,kappa_tilde,nu_h0,nu_h1,iota_h0,iota_h1,gamma,psi,sigma,nu_e,b,educ,tau_s,tau_p,ybar) ...
-    MahlerYum2024_ReturnFn(n,f,aprime,a,h,z,agej,Jr,lambda_h0,lambda_h1,theta,y_pen,r,kappa_tilde,nu_h0,nu_h1,iota_h0,iota_h1,gamma,psi,sigma,nu_e,b,educ,tau_s,tau_p,ybar);
+ReturnFn=@(n,f,aprime,a,h,z,agej,Jr,lambda_h0,lambda_h1,theta,y_pen,r,kappa_tilde,nu_h0,nu_h1,iota_h0,iota_h1,gamma,psi,sigma,nu_e,b,educ,tau_s,tau_p,ybar,Ttilde) ...
+    MahlerYum2024_ReturnFn(n,f,aprime,a,h,z,agej,Jr,lambda_h0,lambda_h1,theta,y_pen,r,kappa_tilde,nu_h0,nu_h1,iota_h0,iota_h1,gamma,psi,sigma,nu_e,b,educ,tau_s,tau_p,ybar,Ttilde);
 
 %% Set options for the toolkit
 vfoptions.verbose    = 1; % Just so we can see feedback on progress

@@ -17,7 +17,7 @@
 %TCIDATA{Version=5.50.0.2953}
 %TCIDATA{<META NAME="SaveForMode" CONTENT="1">}
 %TCIDATA{BibliographyScheme=Manual}
-%TCIDATA{LastRevised=Saturday, April 26, 2025 16:08:47}
+%TCIDATA{LastRevised=Saturday, April 26, 2025 16:03:36}
 %TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
 
 \newtheorem{theorem}{Theorem}
@@ -219,12 +219,8 @@ employment rates by age and by health).
 
 \item Disutility of health effort is%
 \begin{equation*}
-\varphi \left( f;h,\overline{e}\right) =\iota _{j}\left( h,\overline{e}%
-=0\right) \frac{f^{1+1/\psi }}{1+1/\psi }
-\end{equation*}%
-where $\iota _{j}\left( h,\overline{e}=0\right) $ is an age-specific shifter
-that depends also on health state and on education fixed type (to match mean
-health effort by age, health status and education).
+\varphi \left( f;h,\overline{e}\right) =
+\end{equation*}
 \end{itemize}
 \end{itemize}
 

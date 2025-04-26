@@ -9,7 +9,7 @@ function prob=MahlerYum2024_SemiExoStateFn(h,hprime,f,sj_h0,sj_h1,educ,eta,pi0,l
 % sj_h1:  Survival probability, given h=1 (healthy), depends on educ and age
 % educ:   Permanent education type, as dummy 0,1
 % eta:    Permanent healthy type, as dummy 0,1
-% pi0:
+% pi0:    Age-dependent shifter
 % lambda1,delta,gamma1,gamma2: Scalar parameters
 %-------------------------------------------------------------------------%
 prob = -inf; % Just a placeholder (one that will cause errors if not overwritten)

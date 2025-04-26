@@ -1,6 +1,6 @@
 function F = MahlerYum2024_ReturnFn(n,f,aprime,a,h,z,agej,Jr,lambda_h0,lambda_h1,...
     theta,y_pen,r,kappa_tilde,nu_h0,nu_h1,iota_h0,iota_h1,gamma,psi,sigma,...
-    nu_e,b,educ,tau_s,tau_p,ybar)
+    nu_e,b,educ,tau_s,tau_p,ybar,Ttilde)
 %INPUT ARGUMENTS
 % n:      Labor supply,             decision variable d1
 % f:      health effort,            decision variable d2
@@ -39,15 +39,24 @@ else
     iota_shift    = iota_h1;   % Shifter for cost of effort
 end
 
+% Social transfers
+if (h==0 && n==0)
+    transfers = Ttilde;
+else
+    transfers = 0;
+end
+
 if agej<Jr % If working age
     wage = exp(lambda+theta+z);
     earnings = wage*n;
-    %taxab_income = earnings+r*a;
-    %tax=taxab_income-(1-tau_s)*taxab_income^(1-tau_p) *(ybar^tau_p);
-    c    = (1+r)*a + earnings - aprime;
+    taxab_income = earnings;
+    tax=taxab_income-(1-tau_s)*taxab_income^(1-tau_p)*(ybar^tau_p);
+    c    = (1+r)*a + transfers + earnings - tax - aprime;
 else % Retirement
     c    = y_pen + (1+r)*a - aprime;
 end
+
+%TODO: Add transfers ctilde
 
 if c>0 
     util_cons    = kappa_shifter*(c^(1-sigma)/(1-sigma)+b);
