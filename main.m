@@ -15,14 +15,14 @@ addpath(genpath(myf))
 % Ordering of variables: (n,f,aprime,a,h,z)
 % 2 Decision variables: n (labor supply) and f (health effort)
 % 1 Endogenous state variable:           aprime, a (assets) 
-% 1 Semi-exogenous shock:                h (health status)
+% 1 Semi-exogenous shock:                h (health status, 0-1)
 % 1 Exogenous shock:                     z (labor productivity)
 % Age:                                   j
 % 4 Permanent types:                    
-%   educ  = fixed education
-%   beta  = fixed patience
-%   theta = fixed productivity
-%   eta   = fixed health type
+%   educ  = fixed education, 0-1
+%   beta  = fixed patience, 0-1
+%   theta = fixed productivity, 0-1
+%   eta   = fixed health type, 0-1
 
 %% Set parameters
 
@@ -297,6 +297,8 @@ semiz_grid = [0,1,2]'; % 0=unhealthy, 1=healthy, 2=dead
 % everyone and depends only on education fixed type. Used to determine
 % pension benefits
 z_med = z_grid(floor((n_z+1)/2));
+% TODO: Now P(e) depends only on fixed educ and I average out theta using
+% the exogenous distribution of theta. Alternatively, I can make P(e,theta)
 % e0 = non-college
 Params.y_pen_e0 = Params.n_ft*Params.theta_prob(1)*exp(Params.lambda_h1_e0(Params.Jr-1)+Params.theta_low+z_med)+...
     Params.theta_prob(2)*exp(Params.lambda_h1_e0(Params.Jr-1)+Params.theta_high+z_med);
@@ -651,8 +653,6 @@ size(StatDist.e0b0p0h0)
 disp([n_a,n_semiz,n_z,N_j])
 
 [mu,pol_n,pol_f,pol_aprime] = create_my_statdist(StatDist,Policy,Names_i,n_a,n_semiz,n_z,N_j);
-
-
 
 %% FnsToEvaluate
 % n,f: Two decision variables d1 and d2

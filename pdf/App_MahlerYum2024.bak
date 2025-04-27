@@ -1,6 +1,7 @@
 %\input{tcilatex}
 %\input{tcilatex}
 %\input{tcilatex}
+%\input{tcilatex}
 
 
 \documentclass[12pt,a4paper]{article}
@@ -17,7 +18,7 @@
 %TCIDATA{Version=5.50.0.2953}
 %TCIDATA{<META NAME="SaveForMode" CONTENT="1">}
 %TCIDATA{BibliographyScheme=Manual}
-%TCIDATA{LastRevised=Saturday, April 26, 2025 16:03:36}
+%TCIDATA{LastRevised=Sunday, April 27, 2025 15:47:49}
 %TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
 
 \newtheorem{theorem}{Theorem}
@@ -50,13 +51,16 @@
 \begin{document}
 
 \title{Mahler and Yum (2024)}
-\author{Alessandro Di Nola and Robert Kirkby}
+\author{Alessandro Di Nola, Robert Kirkby and Haomin Wang}
 \date{}
 \maketitle
 
 \section{Model description}
 
-Brief description of replication of Mahler and Yum (2024).
+Brief description of the replication of Mahler and Yum (2024). We follow
+closely their notation. The only departure in terms of model assumptions: we
+eliminate lagged health effort. We do this change since the code runs much
+faster. Moreover, it may not be such an important feature.
 
 \begin{itemize}
 \item State variables:
@@ -94,10 +98,10 @@ Brief description of replication of Mahler and Yum (2024).
 \item Individual problem%
 \begin{equation*}
 V_{j}\left( a,h,z,\overline{e},\overline{\beta },\overline{\theta },%
-\overline{\eta }\right) =\max_{c,a^{\prime },n,f}\left\{ u\left( c\right) +%
-\overline{\beta }s_{j}(h,e)E\left[ V_{j+1}(a^{\prime },h^{\prime },z^{\prime
-},\overline{e},\overline{\beta },\overline{\theta },\overline{\eta })\right]
-\right\} 
+\overline{\eta }\right) =\max_{c,a^{\prime },n,f}\left\{ u\left( c,n,f,h,%
+\overline{e}\right) +\overline{\beta }s_{j}(h,\overline{e})E\left[
+V_{j+1}(a^{\prime },h^{\prime },z^{\prime },\overline{e},\overline{\beta },%
+\overline{\theta },\overline{\eta })\right] \right\} 
 \end{equation*}%
 subject to%
 \begin{equation*}
@@ -107,7 +111,7 @@ c+a^{\prime }=(1+r)a+T(c,h,n)+w_{j}\left( h,z,\overline{e},\overline{\theta }%
 \end{equation*}%
 and%
 \begin{equation*}
-c+a^{\prime }=(1+r)a+P(e)\text{, if }j\geq J_{R}
+c+a^{\prime }=(1+r)a+P(\overline{e})\text{, if }j\geq J_{R}
 \end{equation*}%
 where $T\left( \cdot \right) $ denotes transfers and $\mathcal{T}\left(
 \cdot \right) $ denotes income taxes. The expected value function is defined
@@ -134,17 +138,20 @@ where $h=0$ is \textquotedblleft unhealth\textquotedblright\ and $h=1$ is
 healthy in the next period is an increasing function of effort $f\in \lbrack
 0,1]$ modelled as a logistic curve:%
 \begin{equation*}
-\Pr \left( h^{\prime }=1|\right) =\frac{1}{1+\exp \left( -\left( \pi
-_{j}^{0}+\lambda _{1}f+\delta h+\gamma _{1}\overline{e}+\gamma _{2}\overline{%
-\eta }\right) \right) }
+\Pr \left( h^{\prime }=1|h,f,\overline{e},\overline{\eta },j\right) =\frac{1%
+}{1+\exp \left( -\left( \pi _{j}^{0}+\lambda _{1}f+\delta h+\gamma _{1}%
+\overline{e}+\gamma _{2}\overline{\eta }\right) \right) }
 \end{equation*}%
-Note that $\pi _{j}^{0}$ is a shifter that depends on age, $f$ is health
-effort, $h$ is health in the current period, $\overline{e}$ is fixed
-education type (0 if non-college, 1 if college) and $\overline{\eta }$ is
-fixed health type (0 if low, 1 if high). Plot $f(x)=\frac{1}{1+\exp (-x)}$:
-it is defined over $x\in \left( -\infty ,\infty \right) $, increasing,
-convex for $x<0$, concave for $x>0$, inflexion point at $x=0$ where $f(0)=0.5
-$. As $x\rightarrow \infty $, $f(x)\rightarrow 1$).
+Note that $\pi _{j}^{0}$ is a shifter that depends on age\footnote{%
+The original formulation in the paper has $\pi _{j}^{0}+\gamma _{3}A_{i}$
+where $\pi _{j}^{0}$ is the constant (baseline age group) and $A_{i}$ is a
+vector of dummies 0-1 for each each group.}, $f$ is health effort, $h$ is
+health in the current period, $\overline{e}$ is fixed education type (0 if
+non-college, 1 if college) and $\overline{\eta }$ is fixed health type (0 if
+low, 1 if high). Plot $f(x)=\frac{1}{1+\exp (-x)}$: it is defined over $x\in
+\left( -\infty ,\infty \right) $, increasing, convex for $x<0$, concave for $%
+x>0$, inflexion point at $x=0$ where $f(0)=0.5$. As $x\rightarrow \infty $, $%
+f(x)\rightarrow 1$).
 
 \item Tax function $\mathcal{T}\left( y,y_{bar}\right) $ is defined as%
 \begin{equation*}
@@ -171,7 +178,8 @@ T_{2}=\left\{
 0 & \text{otherwise}%
 \end{array}%
 \right. 
-\end{equation*}
+\end{equation*}%
+Note: the transfer $\widetilde{T}>0$ should be paid even if $a^{\prime }>0$?
 
 \item The wage function (i.e. the wage per unit of labor supplied) is
 defined as%
@@ -192,19 +200,35 @@ depends on education:%
 h=0\right\} }\right) 
 \end{equation*}
 
+\item Pension benefits. Pension benefits depends only on education. It is
+not exactly clear how they compute $P(\overline{e})$ from the paper. They
+write \textit{\textquotedblleft We initially set these as equal to the
+earnings agents would have earned in the period prior to retirement if they
+had worked full-time with a median productivity shock value. We then scale
+them by a constant\textquotedblright }. In the code we assume that 
+\begin{equation*}
+P(\overline{e})=\omega \left[ \Pr \left( \overline{\theta }=\overline{\theta 
+}_{low}\right) \exp \left( \lambda _{j}\left( h=1,\overline{e}\right) +%
+\overline{\theta }_{low}+z_{med}\right) +\Pr \left( \overline{\theta }=%
+\overline{\theta }_{high}\right) \exp \left( \lambda _{j}\left( h=1,%
+\overline{e}\right) +\overline{\theta }_{high}+z_{med}\right) \right] 
+\end{equation*}
+
 \item Preferences. The per-period utility function takes the form:%
 \begin{equation*}
 u(c,n,f,h,\overline{e})=\kappa \left( h\right) \left( \frac{c^{1-\sigma }}{%
 1-\sigma }+b\right) -\phi \left( n;h,\overline{e}\right) -\varphi \left( f;h,%
 \overline{e}\right) 
 \end{equation*}%
-where 
+where
 
 \begin{itemize}
 \item Utility of consumption is%
 \begin{equation*}
 \kappa \left( h\right) \left( \frac{c^{1-\sigma }}{1-\sigma }+b\right) 
-\end{equation*}
+\end{equation*}%
+where $\kappa \left( h\right) =1$ if $h=1$ (healthy) but $\kappa \left(
+h\right) =\widetilde{\kappa }<1$.
 
 \item Disutility of labor is%
 \begin{equation*}
@@ -219,9 +243,39 @@ employment rates by age and by health).
 
 \item Disutility of health effort is%
 \begin{equation*}
-\varphi \left( f;h,\overline{e}\right) =
-\end{equation*}
+\varphi \left( f;h,\overline{e}\right) =\iota _{j}\left( h,\overline{e}%
+\right) \frac{f^{1+1/\psi }}{1+1/\psi }
+\end{equation*}%
+where $\iota _{j}\left( h,\overline{e}=0\right) $ is an age-specific shifter
+that depends also on health state and on education fixed type (to match mean
+health effort by age, health status and education).
 \end{itemize}
+\end{itemize}
+
+\section{VFI Toolkit}
+
+\begin{itemize}
+\item In the toolkit, the survival rate $s_{j}(h,e)$ cannot depend on state $%
+h$.%
+\begin{equation*}
+V_{j}=u(c)+\beta s_{j}V_{j+1}+\beta \left( 1-s_{j}\right) 0
+\end{equation*}%
+\begin{equation*}
+V_{j}=u(c)+\beta EV_{j+1}\left( h^{\prime }\right) 
+\end{equation*}%
+Include a dead state into health state%
+\begin{equation*}
+h=0,1,2
+\end{equation*}%
+where $h=2$ means dead. Then the transition for $h$ is a 3*3 matrix%
+\begin{equation*}
+\begin{array}{cccc}
+&  &  &  \\ 
+h=0\text{ (unhealthy)} &  &  &  \\ 
+h=1\text{ (healthy)} &  &  &  \\ 
+h=2\text{ (unhealthy)} &  &  & 
+\end{array}%
+\end{equation*}
 \end{itemize}
 
 \end{document}
